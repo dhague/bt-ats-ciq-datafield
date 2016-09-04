@@ -1,0 +1,63 @@
+<resources>
+	<properties>
+		<property id="antSpeedSensorId" type="number">41558</property>
+		<property id="antSpeedSensorType" type="number">121</property>
+	</properties>
+
+	<strings>
+		<string id="antSpeedSensor">ANT Speed Sensor ID</string>
+		<string id="antSpeedSensorPrompt">Numeric ID of the BT-ATS speed or speed/cadence sensor</string>
+		<string id="antSpeedSensorError">Error in speed sensor ID</string>
+		<string id="antSpeedSensorType">ANT Speed Sensor Type</string>
+		<string id="antSpeedSensorTypePrompt">Choose speed, cadence or speed/cadence sensor</string>
+		<string id="antSpeedOnly">Speed-only</string>
+		<string id="antSpeedCadence">Speed and Cadence</string>
+		<string id="antCadenceOnly">Cadence-only</string>
+	</strings>
+	
+	<settings>
+		<setting propertyKey="@Properties.antSpeedSensorId" title="@Strings.antSpeedSensor"
+			prompt="@Strings.antSpeedSensorPrompt">
+			<settingConfig type="numeric" errorMessage="@Strings.antSpeedSensorError" />
+		</setting>
+	    <setting propertyKey="@Properties.antSpeedSensorType" title="@Strings.antSpeedSensorType" 
+	        prompt="@Strings.antSpeedSensorTypePrompt">
+	        <settingConfig type="list">
+	            <listEntry value="123">@Strings.antSpeedOnly</listEntry>
+	            <listEntry value="121">@Strings.antSpeedCadence</listEntry>
+	            <listEntry value="122">@Strings.antCadenceOnly</listEntry>
+	        </settingConfig>
+	    </setting>		
+	</settings>
+
+	<!-- Copied from MO2Sensor - redo for BT-ATS power -->
+	<!--
+	<fitContributions>
+		<fitField id="0" displayInChart="true" sortOrder="0"
+			precision="2" chartTitle="@Strings.hemoglobin_concentration_label"
+			dataLabel="@Strings.hemoglobin_concentration_label" unitLabel="@Strings.hemoglobin_concentration_units"
+			fillColor="#FF0000" />
+
+		<fitField id="1" displayInChart="false" sortOrder="1"
+			precision="2" displayInActivityLaps="true"
+			dataLabel="@Strings.hemoglobin_concentration_label" unitLabel="@Strings.hemoglobin_concentration_units" />
+
+		<fitField id="2" displayInActivitySummary="true" sortOrder="2"
+			precision="2" dataLabel="@Strings.hemoglobin_concentration_label"
+			unitLabel="@Strings.hemoglobin_concentration_units" />
+
+		<fitField id="3" displayInChart="true" sortOrder="3"
+			precision="2" chartTitle="@Strings.hemoglobin_percentage_label"
+			dataLabel="@Strings.hemoglobin_percentage_label" unitLabel="@Strings.hemoglobin_percentage_units"
+			fillColor="#00FF00" />
+
+		<fitField id="4" displayInChart="false" sortOrder="4"
+			precision="2" displayInActivityLaps="true"
+			dataLabel="@Strings.hemoglobin_percentage_label" unitLabel="@Strings.hemoglobin_percentage_units" />
+
+		<fitField id="5" displayInActivitySummary="true" sortOrder="5"
+			precision="2" dataLabel="@Strings.hemoglobin_percentage_label"
+			unitLabel="@Strings.hemoglobin_percentage_units" />
+	</fitContributions>
+	-->
+</resources>

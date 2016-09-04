@@ -21,8 +21,8 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
     var previousMessageTime;
     var searching;
     var deviceCfg;
-    
-    
+
+
     var revsPerSec = 0.0;
 
     class SpeedCadenceData {
@@ -39,21 +39,17 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         }
     }
 
-	class DataPage {		
-	    function parseEventTime(payload, offset) {
-	       return (payload[offset] | (payload[offset+1] << 8)) / 1024f;
-	    }
+    class DataPage {
+        function parseEventTime(payload, offset) {
+           return (payload[offset] | (payload[offset+1] << 8)) / 1024f;
+        }
 
-	    function parseRevCount(payload, offset) {
-	       return payload[offset] | (payload[offset+1] << 8);
-	    }
+        function parseRevCount(payload, offset) {
+           return payload[offset] | (payload[offset+1] << 8);
+        }
     }
-    
+
     class SpeedDataPage extends DataPage {
-    	function initialize() {
-    		DataPage.initialize();
-    	}
-    
         function parse(payload, data) {
             data.speedEventTime = parseEventTime(payload, 4);
             data.speedRevCount = parseRevCount(payload, 6);
@@ -61,10 +57,6 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
     }
 
     class CadenceDataPage extends DataPage {
-    	function initialize() {
-    		DataPage.initialize();
-    	}
-    
         function parse(payload, data) {
             data.cadenceEventTime = parseEventTime(payload, 4);
             data.cadenceRevCount = parseRevCount(payload, 6);
@@ -72,24 +64,20 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
     }
 
     class SpeedCadenceDataPage extends DataPage {
-    	function initialize() {
-    		DataPage.initialize();
-    	}
-    
         function parse(payload, data) {
-        	System.println("SpeedCadenceDataPage.parse()");
-        	System.print("parse cadence event time: ");
+            //System.println("SpeedCadenceDataPage.parse()");
+            //System.print("parse cadence event time: ");
             data.cadenceEventTime = parseEventTime(payload, 0);
-            System.println(data.cadenceEventTime);
-        	System.print("parse cadence rev count: ");
+            //System.println(data.cadenceEventTime);
+            //System.print("parse cadence rev count: ");
             data.cadenceRevCount = parseRevCount(payload, 2);
-            System.println(data.cadenceRevCount);
-        	System.print("parse speed event time: ");
+            //System.println(data.cadenceRevCount);
+            //System.print("parse speed event time: ");
             data.speedEventTime = parseEventTime(payload, 4);
-            System.println(data.speedEventTime);
-        	System.print("parse speed rev count: ");
+            //System.println(data.speedEventTime);
+            //System.print("parse speed rev count: ");
             data.speedRevCount = parseRevCount(payload, 6);
-            System.println(data.speedRevCount);
+            //System.println(data.speedRevCount);
         }
     }
 
@@ -101,19 +89,19 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
             Ant.NETWORK_PLUS);
         GenericChannel.initialize(method(:onMessage), chanAssign);
 
-		var sensorType = Application.getApp().getProperty("antSpeedSensorType");
-		System.println("antSpeedSensorType: "+sensorType);
+        var sensorType = Application.getApp().getProperty("antSpeedSensorType");
+        System.println("antSpeedSensorType: "+sensorType);
 
-		System.println("antSpeedSensorId: "+Application.getApp().getProperty("antSpeedSensorId"));
-		
-		var period = 0;
-		if (sensorType == SPEED_DEVICE_TYPE) {
-			period = 8118;
-		} else if (sensorType == CADENCE_DEVICE_TYPE) {
-			period = 8102;
-		} else if (sensorType == SPEED_CADENCE_DEVICE_TYPE) {
-			period = 8086;
-		}
+        System.println("antSpeedSensorId: "+Application.getApp().getProperty("antSpeedSensorId"));
+
+        var period = 0;
+        if (sensorType == SPEED_DEVICE_TYPE) {
+            period = 8118;
+        } else if (sensorType == CADENCE_DEVICE_TYPE) {
+            period = 8102;
+        } else if (sensorType == SPEED_CADENCE_DEVICE_TYPE) {
+            period = 8086;
+        }
 
         // Set the configuration
         deviceCfg = new Ant.DeviceConfig( {
@@ -130,8 +118,8 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         searching = true;
         previousData = null;
         currentData = null;
-        
-        onMessageTest(null);
+
+        //onMessageTest(null);
     }
 
     function open() {
@@ -144,8 +132,8 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         GenericChannel.close();
     }
 
-	// Hopefully this will be the template for sending out a power message (maybe in a PowerSensor class)
-	// - but we will need GenericChannel to be able to both receive Speed and send Power
+    // Hopefully this will be the template for sending out a power message (maybe in a PowerSensor class)
+    // - but we will need GenericChannel to be able to both receive Speed and send Power
     function setTime() {
         if( !searching && ( data.utcTimeSet ) ) {
             //Create and populat the data payload
@@ -172,31 +160,31 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         // Question: how to detect if we are stopped?
         // Answer: heuristic - record timestamps of messages. If > 1 second between messages with
         // no change in speed data then we are stopped.
-		
-		// TODO
-		return false;    
+
+        // TODO
+        return false;
     }
-    
+
     //(:test)
-	function onMessageTest(logger) {
-		// Simulate a few speed/cadence sensor messages
-		var msg = new Ant.Message();
-		msg.messageId = 0x4E;
-		msg.deviceNumber = 41558;
-		msg.deviceType = 0x79;
-		msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF4, 0x6F, 0xBB, 0x3A]);
-		onMessage(msg);
-		msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF3, 0x71, 0xBF, 0x3A]);
-		onMessage(msg);
-		msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF1, 0x72, 0xC1, 0x3A]);
-		onMessage(msg);
-	    return revsPerSec > 0.0; // returning true indicates pass, false indicates failure
-	}
-    
+    function onMessageTest(logger) {
+        // Simulate a few speed/cadence sensor messages
+        var msg = new Ant.Message();
+        msg.messageId = 0x4E;
+        msg.deviceNumber = 41558;
+        msg.deviceType = 0x79;
+        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF4, 0x6F, 0xBB, 0x3A]);
+        onMessage(msg);
+        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF3, 0x71, 0xBF, 0x3A]);
+        onMessage(msg);
+        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF1, 0x72, 0xC1, 0x3A]);
+        onMessage(msg);
+        return revsPerSec > 0.0; // returning true indicates pass, false indicates failure
+    }
+
     function onMessage(msg) {
-    	System.println("msg.messageId:"+msg.messageId);
-    	
-    	currentMessageTime = Time.now();
+        System.println("msg.messageId:"+msg.messageId);
+
+        currentMessageTime = Time.now();
         // Parse the payload
         var payload = msg.getPayload();
 
@@ -209,61 +197,61 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
                 System.println("deviceCfg.deviceNumber:"+deviceCfg.deviceNumber);
                 System.println("deviceCfg.deviceType:"+deviceCfg.deviceType);
             }
-            
+
             var dp = null;
             // Get the datapage according to the device type in the deviceCfg
             if (deviceCfg.deviceType == SPEED_DEVICE_TYPE) {
-            	System.println("Speed device");
-            	dp = new SpeedDataPage();
+                //System.println("Speed device");
+                dp = new SpeedDataPage();
             }
             else if (deviceCfg.deviceType == CADENCE_DEVICE_TYPE) {
-            	System.println("Cadence device");
-            	dp = new CadenceDataPage();
+                //System.println("Cadence device");
+                dp = new CadenceDataPage();
             }
             else if (deviceCfg.deviceType == SPEED_CADENCE_DEVICE_TYPE) {
-            	System.println("Speed & Cadence device");
-            	dp = new SpeedCadenceDataPage();
+                //System.println("Speed & Cadence device");
+                dp = new SpeedCadenceDataPage();
             }
 
-			if (dp == null) {
-				return;
-			}
-			var messageData = new SpeedCadenceData();
-			System.println("Parse message");
+            if (dp == null) {
+                return;
+            }
+            var messageData = new SpeedCadenceData();
+            //System.println("Parse message");
             dp.parse(msg.getPayload(), messageData);
-			System.println("messageData.speedEventTime: "+messageData.speedEventTime);
-			System.println("messageData.speedRevCount: "+messageData.speedRevCount);
-			
-			if (currentData == null) {
+            //System.println("messageData.speedEventTime: "+messageData.speedEventTime);
+            //System.println("messageData.speedRevCount: "+messageData.speedRevCount);
+
+            if (currentData == null) {
                 previousData = currentData;
                 currentData = messageData;
                 return;
-			}
-            
+            }
+
             if (!stopped() && messageData.speedEventTime != currentData.speedEventTime) {
                 // Calculate speed from previously-held data, if there is a change
                 previousData = currentData;
                 currentData = messageData;
-                System.println("Previous data: "+previousData);
-                System.println("Current data: "+currentData);
+                //System.println("Previous data: "+previousData);
+                //System.println("Current data: "+currentData);
                 if (previousData != null) {
                     var currentEventTime = currentData.speedEventTime;
                     if (currentEventTime < previousData.speedEventTime) {
-                    	currentEventTime = currentEventTime + 65536/1024;
+                        currentEventTime = currentEventTime + 65536/1024;
                     }
                     var timeDiff = currentEventTime - previousData.speedEventTime;
                     var currentRevCount = currentData.speedRevCount;
                     if (currentRevCount < previousData.speedRevCount) {
-                    	currentRevCount = currentRevCount + 65536;
+                        currentRevCount = currentRevCount + 65536;
                     }
                     var revsDiff = currentRevCount - previousData.speedRevCount;
                     revsPerSec = revsDiff / timeDiff;
                     System.println("Sensor Revs/sec: "+revsPerSec);
                 } else {
-                    System.println("Not this time - first event");
+                    //System.println("Not this time - first event");
                 }
             }
-                
+
 
         } else if(Ant.MSG_ID_CHANNEL_RESPONSE_EVENT == msg.messageId) {
             if (Ant.MSG_ID_RF_EVENT == (payload[0] & 0xFF)) {

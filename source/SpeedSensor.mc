@@ -21,7 +21,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
     var previousMessageTime;
     var searching;
     var deviceCfg;
-
+    var antChannel;
 
     var revsPerSec = 0.0;
 
@@ -87,7 +87,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         chanAssign = new Ant.ChannelAssignment(
             Ant.CHANNEL_TYPE_RX_NOT_TX,
             Ant.NETWORK_PLUS);
-        GenericChannel.initialize(method(:onMessage), chanAssign);
+        antChannel = new GenericChannel(method(:onMessage), chanAssign);
 
         var sensorType = Application.getApp().getProperty("antSpeedSensorType");
         System.println("antSpeedSensorType: "+sensorType);
@@ -112,7 +112,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
             :radioFrequency => 57,              //Ant+ Frequency
             :searchTimeoutLowPriority => 10,    //Timeout in 25s
             :searchThreshold => 0} );           //Pair to all transmitting sensors
-        GenericChannel.setDeviceConfig(deviceCfg);
+        antChannel.setDeviceConfig(deviceCfg);
 
         revsPerSec = 0.0;
         searching = true;
@@ -124,36 +124,12 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
 
     function open() {
         // Open the channel
-        GenericChannel.open();
+        antChannel.open();
         searching = true;
     }
 
     function closeSensor() {
-        GenericChannel.close();
-    }
-
-    // Hopefully this will be the template for sending out a power message (maybe in a PowerSensor class)
-    // - but we will need GenericChannel to be able to both receive Speed and send Power
-    function setTime() {
-        if( !searching && ( data.utcTimeSet ) ) {
-            //Create and populat the data payload
-            var payload = new [8];
-            payload[0] = 0x10;  //Command data page
-            payload[1] = 0x00;  //Set time command
-            payload[2] = 0xFF; //Reserved
-            payload[3] = 0; //Signed 2's complement value indicating local time offset in 15m intervals
-
-            //Set the current time
-            var moment = Time.now();
-            for (var i = 0; i < 4; i++) {
-                payload[i + 4] = ((moment.value() >> i) & 0x000000FF);
-            }
-
-            //Form and send the message
-            var message = new Ant.Message();
-            message.setPayload(payload);
-            GenericChannel.sendAcknowledge(message);
-        }
+        antChannel.close();
     }
 
     function stopped() {
@@ -193,7 +169,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
             if (searching) {
                 searching = false;
                 // Update our device configuration primarily to see the device number of the sensor we paired to
-                deviceCfg = GenericChannel.getDeviceConfig();
+                deviceCfg = antChannel.getDeviceConfig();
                 System.println("deviceCfg.deviceNumber:"+deviceCfg.deviceNumber);
                 System.println("deviceCfg.deviceType:"+deviceCfg.deviceType);
             }

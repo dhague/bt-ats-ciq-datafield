@@ -3,7 +3,9 @@ using Toybox.Application as App;
 class BTATSApp extends App.AppBase {
 
     var scSensor;
-    
+    var pSensor;
+    var vpowerCalculator;
+
     function initialize() {
         AppBase.initialize();
         System.println("#### BTATSApp.initialize() ####");
@@ -13,11 +15,21 @@ class BTATSApp extends App.AppBase {
     function onStart(state) {
         System.println("BTATSApp.onStart()");
         try {
-            //Create the sensor object and open it
-            scSensor = new SpeedCadenceSensor();
+            //Create the power sensor object and open it
+            pSensor = new PowerTxSensor();
+            pSensor.open();
+        } catch(e instanceof Ant.UnableToAcquireChannelException) {
+            Sys.println("pSensor: "+e.getErrorMessage());
+            pSensor = null;
+        }
+        // Create a power calculator and notify the power sensor whenever power changes
+        powerCalculator = new BtAtsPowerCalculator(pSensor.method(:onPowerChange));
+        try {
+            //Create the speed sensor object and open it, notify power calculator when speed changes
+            scSensor = new SpeedCadenceSensor(powerCalculator.method(:onSpeedChange));
             scSensor.open();
         } catch(e instanceof Ant.UnableToAcquireChannelException) {
-            Sys.println(e.getErrorMessage());
+            Sys.println("scSensor: "+e.getErrorMessage());
             scSensor = null;
         }
     }

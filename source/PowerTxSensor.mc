@@ -8,126 +8,63 @@ using Toybox.Ant as Ant;
 using Toybox.Time as Time;
 using Toybox.System as System;
 
-class SpeedCadenceSensor extends Ant.GenericChannel {
-    const SPEED_DEVICE_TYPE = 0x7B;
-    const CADENCE_DEVICE_TYPE = 0x7A;
-    const SPEED_CADENCE_DEVICE_TYPE = 0x79;
+class PowerTxSensor extends Ant.GenericChannel {
+    const POWER_DEVICE_TYPE = 0x0B;
+    const CHANNEL_PERIOD = 8182;
 
     hidden var chanAssign;
-
-    var currentData;
-    var previousData;
-    var currentMessageTime;
-    var previousMessageTime;
-    var searching;
+    var powerSensorId;
+    var powerData;
     var deviceCfg;
 
-    var revsPerSec = 0.0;
-
-    var observer = null;
-
-    function setRevsPerSec(rps) {
-        revsPerSec = rps;
-        if (observer) {
-            observer.invoke(revsPerSec);
-        }
-    }
-
-    class SpeedCadenceData {
-        var speedRevCount;
-        var speedEventTime;
-        var cadenceRevCount;
-        var cadenceEventTime;
+    class PowerData {
+        var eventCount;
+        var eventTime;
+        var cumulativePower;
+        var instantaneousPower;
+        var cadence;
 
         function initialize() {
-            speedRevCount = null;
-            speedEventTime = null;
-            cadenceRevCount = null;
-            cadenceEventTime = null;
+            eventCount = 0;
+            eventTime = 0;
+            cumulativePower = 0;
+            instantaneousPower = 0;
+            cadence = 0;
         }
     }
 
-    class DataPage {
-        function parseEventTime(payload, offset) {
-           return (payload[offset] | (payload[offset+1] << 8)) / 1024f;
-        }
-
-        function parseRevCount(payload, offset) {
-           return payload[offset] | (payload[offset+1] << 8);
-        }
+    class PowerDataPage {
     }
 
-    class SpeedDataPage extends DataPage {
-        function parse(payload, data) {
-            data.speedEventTime = parseEventTime(payload, 4);
-            data.speedRevCount = parseRevCount(payload, 6);
-        }
-    }
-
-    class CadenceDataPage extends DataPage {
-        function parse(payload, data) {
-            data.cadenceEventTime = parseEventTime(payload, 4);
-            data.cadenceRevCount = parseRevCount(payload, 6);
-        }
-    }
-
-    class SpeedCadenceDataPage extends DataPage {
-        function parse(payload, data) {
-            //System.println("SpeedCadenceDataPage.parse()");
-            //System.print("parse cadence event time: ");
-            data.cadenceEventTime = parseEventTime(payload, 0);
-            //System.println(data.cadenceEventTime);
-            //System.print("parse cadence rev count: ");
-            data.cadenceRevCount = parseRevCount(payload, 2);
-            //System.println(data.cadenceRevCount);
-            //System.print("parse speed event time: ");
-            data.speedEventTime = parseEventTime(payload, 4);
-            //System.println(data.speedEventTime);
-            //System.print("parse speed rev count: ");
-            data.speedRevCount = parseRevCount(payload, 6);
-            //System.println(data.speedRevCount);
-        }
-    }
-
-    function initialize(observerMethod) {
-        observer = observerMethod;
+    function initialize() {
 
         // Get the channel
         chanAssign = new Ant.ChannelAssignment(
-            Ant.CHANNEL_TYPE_RX_NOT_TX,
+            Ant.CHANNEL_TYPE_TX_NOT_RX,
             Ant.NETWORK_PLUS);
         GenericChannel.initialize(method(:onMessage), chanAssign);
 
-        var sensorType = Application.getApp().getProperty("antSpeedSensorType");
-        System.println("antSpeedSensorType: "+sensorType);
-
-        System.println("antSpeedSensorId: "+Application.getApp().getProperty("antSpeedSensorId"));
-
-        var period = 0;
-        if (sensorType == SPEED_DEVICE_TYPE) {
-            period = 8118;
-        } else if (sensorType == CADENCE_DEVICE_TYPE) {
-            period = 8102;
-        } else if (sensorType == SPEED_CADENCE_DEVICE_TYPE) {
-            period = 8086;
+        powerSensorId = Application.getApp().getProperty("antPowerSensorId");
+        if (!powerSensorId) {
+            powerSensorId = Time.now().value() & 0xfffe + 1; // Set ID to a "random" nonzero 16-bit number
+            Application.getApp().setProperty("antPowerSensorId", powerSensorId);
         }
+        System.println("antPowerSensorId: "+Application.getApp().getProperty("antPowerSensorId"));
 
         // Set the configuration
         deviceCfg = new Ant.DeviceConfig( {
-            :deviceNumber => Application.getApp().getProperty("antSpeedSensorId"),
-            :deviceType => sensorType,
+            :deviceNumber => powerSensorId,
+            :deviceType => POWER_DEVICE_TYPE,
             :transmissionType => 0,
-            :messagePeriod => period,
+            :messagePeriod => CHANNEL_PERIOD,
             :radioFrequency => 57,              //Ant+ Frequency
             :searchTimeoutLowPriority => 10,    //Timeout in 25s
-            :searchThreshold => 0} );           //Pair to all transmitting sensors
+            :searchThreshold => 0} );           //Pair to all receiving head units
         GenericChannel.setDeviceConfig(deviceCfg);
 
-        revsPerSec = 0.0;
         searching = true;
-        previousData = null;
-        currentData = null;
 
+        powerData = new PowerData();
         //onMessageTest(null);
     }
 
@@ -141,30 +78,48 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         GenericChannel.close();
     }
 
-    function stopped() {
-        // Question: how to detect if we are stopped?
-        // Answer: heuristic - record timestamps of messages. If > 1 second between messages with
-        // no change in speed data then we are stopped.
-
-        // TODO
-        return false;
-    }
-
     //(:test)
     function onMessageTest(logger) {
-        // Simulate a few speed/cadence sensor messages
+        // Simulate a calibration message
+        var msg = new Ant.Message();
+//        msg.messageId = 0x4E;
+//        msg.deviceNumber = 41558;
+//        msg.deviceType = 0x79;
+//        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF4, 0x6F, 0xBB, 0x3A]);
+//        onMessage(msg);
+//        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF3, 0x71, 0xBF, 0x3A]);
+//        onMessage(msg);
+//        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF1, 0x72, 0xC1, 0x3A]);
+//        onMessage(msg);
+//        return revsPerSec > 0.0; // returning true indicates pass, false indicates failure
+    }
+
+    // Power was updated, so send out an ANT+ message
+    function onPowerChange(power) {
+        powerData.eventCount = (powerData.eventCount + 1) & 0xff;
+        powerData.cumulativePower = (powerData.cumulativePower + Integer(power)) & 0xffff;
+        powerData.instantaneousPower = power;
+        powerData.cadence = Time.now().value() % 60;
+
         var msg = new Ant.Message();
         msg.messageId = 0x4E;
-        msg.deviceNumber = 41558;
-        msg.deviceType = 0x79;
-        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF4, 0x6F, 0xBB, 0x3A]);
-        onMessage(msg);
-        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF3, 0x71, 0xBF, 0x3A]);
-        onMessage(msg);
-        msg.setPayload([0x55, 0xC6, 0x45, 0x50, 0xF1, 0x72, 0xC1, 0x3A]);
-        onMessage(msg);
-        return revsPerSec > 0.0; // returning true indicates pass, false indicates failure
+        msg.deviceNumber = powerSensorId;
+        msg.deviceType = POWER_DEVICE_TYPE;
+        payload = new [8];
+        payload[0] = 0x10;  // standard power-only message
+        payload[1] = powerData.eventCount;
+        payload[2] = 0xFF; // Pedal power not used
+        payload[3] = cadence;
+        payload[4] = powerData.cumulativePower & 0xff;
+        payload[5] = powerData.cumulativePower << 8;
+        payload[6] = powerData.instantaneousPower & 0xff;
+        payload[7] = powerData.instantaneousPower << 8;
+        message.setPayload(payload);
+        GenericChannel.sendBroadcast(message);
     }
+
+
+    // Page 1 is calibration
 
     function onMessage(msg) {
         System.println("msg.messageId:"+msg.messageId);
@@ -230,7 +185,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
                         currentRevCount = currentRevCount + 65536;
                     }
                     var revsDiff = currentRevCount - previousData.speedRevCount;
-                    setRevsPerSec(revsDiff / timeDiff);
+                    revsPerSec = revsDiff / timeDiff;
                     System.println("Sensor Revs/sec: "+revsPerSec);
                 } else {
                     //System.println("Not this time - first event");

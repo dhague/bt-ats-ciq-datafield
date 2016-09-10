@@ -4,7 +4,6 @@ class BTATSApp extends App.AppBase {
 
     var scSensor;
     var pSensor;
-    var vpowerCalculator;
 
     function initialize() {
         AppBase.initialize();
@@ -14,6 +13,7 @@ class BTATSApp extends App.AppBase {
     // onStart() is called on application start up
     function onStart(state) {
         System.println("BTATSApp.onStart()");
+/*
         try {
             //Create the power sensor object and open it
             pSensor = new PowerTxSensor();
@@ -24,9 +24,12 @@ class BTATSApp extends App.AppBase {
         }
         // Create a power calculator and notify the power sensor whenever power changes
         powerCalculator = new BtAtsPowerCalculator(pSensor.method(:onPowerChange));
+*/
+        // Create a power calculator and record to the FIT file whenever power changes
+
         try {
             //Create the speed sensor object and open it, notify power calculator when speed changes
-            scSensor = new SpeedCadenceSensor(powerCalculator.method(:onSpeedChange));
+            scSensor = new SpeedCadenceSensor();
             scSensor.open();
         } catch(e instanceof Ant.UnableToAcquireChannelException) {
             Sys.println("scSensor: "+e.getErrorMessage());

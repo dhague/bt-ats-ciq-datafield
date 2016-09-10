@@ -1,7 +1,7 @@
 class BtAtsPowerCalculator {
     var observer = null;    /// callback method
 
-    function initialize(observerMethod) {
+    function notifyChange(observerMethod) {
         observer = observerMethod;
     }
 
@@ -16,6 +16,7 @@ class BtAtsPowerCalculator {
     //  This is a 3rd order polynomial, where P = A*v^3 + B*v^2 + C*v + d
     //  where v is speed in revs/sec and constants A, B, C & D are as defined above.
     function powerFromSpeed(revsPerSec) {
+        var rs = revsPerSec;
         var power = A*rs*rs*rs + B*rs*rs + C*rs + D;
         return power;
     }

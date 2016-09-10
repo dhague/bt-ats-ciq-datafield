@@ -89,9 +89,11 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
         }
     }
 
-    function initialize(observerMethod) {
+    function notifyChange(observerMethod) {
         observer = observerMethod;
+    }
 
+    function initialize() {
         // Get the channel
         chanAssign = new Ant.ChannelAssignment(
             Ant.CHANNEL_TYPE_RX_NOT_TX,

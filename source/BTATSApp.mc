@@ -28,7 +28,7 @@ class BTATSApp extends App.AppBase {
         // Create a power calculator and record to the FIT file whenever power changes
 
         try {
-            //Create the speed sensor object and open it, notify power calculator when speed changes
+            //Create the speed sensor object and open it
             scSensor = new SpeedCadenceSensor();
             scSensor.open();
         } catch(e instanceof Ant.UnableToAcquireChannelException) {

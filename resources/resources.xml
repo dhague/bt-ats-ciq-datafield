@@ -1,7 +1,8 @@
 <resources>
 	<properties>
-		<property id="antSpeedSensorId" type="number">41558</property>
+		<property id="antSpeedSensorId" type="number">24090</property>
 		<property id="antSpeedSensorType" type="number">121</property>
+		<property id="airDensity" type="float">1.191</property>
 	</properties>
 
 	<strings>
@@ -16,6 +17,9 @@
 		<string id="antCadenceOnly">Cadence-only</string>
 	    <string id="power_label">Power</string>
 	    <string id="power_units">Watts</string>
+		<string id="airDensity">Air density (kg/m3)</string>
+		<string id="airDensityPrompt">Air density in kg per cubic metre</string>
+		<string id="airDensityError">Error in air density</string>
 	</strings>
 	
 	<settings>
@@ -31,6 +35,10 @@
 	            <listEntry value="122">@Strings.antCadenceOnly</listEntry>
 	        </settingConfig>
 	    </setting>		
+		<setting propertyKey="@Properties.airDensity" title="@Strings.airDensity"
+			prompt="@Strings.airDensityPrompt">
+			<settingConfig type="numeric" errorMessage="@Strings.airDensityError" />
+		</setting>
 	</settings>
 
 	<fitContributions>

@@ -169,7 +169,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
     }
 
     function onMessage(msg) {
-        System.println("msg.messageId:"+msg.messageId);
+        System.println("msgId:"+msg.messageId);
 
         currentMessageTime = Time.now();
         // Parse the payload
@@ -233,7 +233,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
                     }
                     var revsDiff = currentRevCount - previousData.speedRevCount;
                     setRevsPerSec(revsDiff / timeDiff);
-                    System.println("Sensor Revs/sec: "+revsPerSec);
+                    System.println("revsPerSec: "+revsPerSec);
                 } else {
                     //System.println("Not this time - first event");
                 }

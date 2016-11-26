@@ -100,10 +100,12 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
             Ant.NETWORK_PLUS);
         GenericChannel.initialize(method(:onMessage), chanAssign);
 
-        var sensorType = Application.getApp().getProperty("antSpeedSensorType");
+        var sensorType = readKeyLong(Application.getApp(), "antSpeedSensorType", SPEED_DEVICE_TYPE);
         System.println("antSpeedSensorType: "+sensorType);
 
-        System.println("antSpeedSensorId: "+Application.getApp().getProperty("antSpeedSensorId"));
+        var sensorId = readKeyLong(Application.getApp(), "antSpeedSensorId", 0);
+
+        System.println("antSpeedSensorId: "+sensorId);
 
         var period = 0;
         if (sensorType == SPEED_DEVICE_TYPE) {
@@ -116,7 +118,7 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
 
         // Set the configuration
         deviceCfg = new Ant.DeviceConfig( {
-            :deviceNumber => Application.getApp().getProperty("antSpeedSensorId"),
+            :deviceNumber => sensorId,
             :deviceType => sensorType,
             :transmissionType => 0,
             :messagePeriod => period,
@@ -252,6 +254,18 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
                 //It is a channel response.
             }
         }
+    }
+
+    function readKeyLong(myApp, key, thisDefault) {
+        var value = myApp.getProperty(key);
+        if(value == null || !(value instanceof Long)) {
+            if(value != null) {
+                value = value.toLong();
+            } else {
+                value = thisDefault;
+            }
+        }
+        return value;
     }
 
 }

@@ -4,6 +4,7 @@ class BTATSApp extends App.AppBase {
 
     var scSensor;
     var pSensor;
+    var btAtsView;
 
     function initialize() {
         AppBase.initialize();
@@ -44,7 +45,13 @@ class BTATSApp extends App.AppBase {
     // Return the initial view of your application here
     function getInitialView() {
         System.println("BTATSApp.getInitialView()");
-        return [ new BTATSView(scSensor) ];
+        btAtsView = new BTATSView(scSensor);
+        return [ btAtsView ];
     }
 
+    // onStop() is called when your application is exiting
+    function onSettingsChanged() {
+        scSensor.initialize();
+        btAtsView.powerCalculator.updateAirDensityCorrection();
+    }
 }

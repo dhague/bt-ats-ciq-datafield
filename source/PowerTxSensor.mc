@@ -46,7 +46,7 @@ class PowerTxSensor extends Ant.GenericChannel {
 
         powerSensorId = Application.getApp().getProperty("antPowerSensorId");
         if (!powerSensorId) {
-            powerSensorId = Time.now().value() & 0xfffe + 1; // Set ID to a "random" nonzero 16-bit number
+            powerSensorId = System.getTimer().value() & 0xfffe + 1; // Set ID to a "random" nonzero 16-bit number
             Application.getApp().setProperty("antPowerSensorId", powerSensorId);
         }
         System.println("antPowerSensorId: "+Application.getApp().getProperty("antPowerSensorId"));
@@ -99,7 +99,7 @@ class PowerTxSensor extends Ant.GenericChannel {
         powerData.eventCount = (powerData.eventCount + 1) & 0xff;
         powerData.cumulativePower = (powerData.cumulativePower + Integer(power)) & 0xffff;
         powerData.instantaneousPower = power;
-        powerData.cadence = Time.now().value() % 60;
+        powerData.cadence = System.getTimer().value() % 60;
 
         var msg = new Ant.Message();
         msg.messageId = 0x4E;
@@ -124,7 +124,7 @@ class PowerTxSensor extends Ant.GenericChannel {
     function onMessage(msg) {
         System.println("msg.messageId:"+msg.messageId);
 
-        currentMessageTime = Time.now();
+        currentMessageTime = System.getTimer();
         // Parse the payload
         var payload = msg.getPayload();
 

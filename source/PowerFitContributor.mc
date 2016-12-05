@@ -11,6 +11,6 @@ class PowerFitContributor {
     }
 
     function record(power) {
-        mCurrentPower.setData(power);
+        mCurrentPower.setData(power.toNumber());
     }
 }

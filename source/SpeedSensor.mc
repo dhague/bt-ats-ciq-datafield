@@ -17,8 +17,6 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
 
     var currentData;
     var previousData;
-    var currentMessageTime;
-    var previousMessageTime;
     var searching;
     var deviceCfg;
 
@@ -173,7 +171,6 @@ class SpeedCadenceSensor extends Ant.GenericChannel {
     function onMessage(msg) {
         System.println("msgId:"+msg.messageId);
 
-        currentMessageTime = Time.now();
         // Parse the payload
         var payload = msg.getPayload();
 

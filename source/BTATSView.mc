@@ -21,13 +21,12 @@ class BTATSView extends Ui.SimpleDataField {
     }
 
     function compute(info) {
-        //System.println("info.currentSpeed is: "+info.currentSpeed);
-        //var rs = info.currentSpeed / 2.1; // revs per second
         if (powerCalculator != null) {
-            System.println("W: "+powerCalculator.power);
-            return powerCalculator.power;
+            var power = powerCalculator.getPower().toNumber();
+            System.println("W: "+power);
+            return power;
         } else {
-            return 0.0;
+            return 0;
         }
     }
 

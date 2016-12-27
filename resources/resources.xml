@@ -3,6 +3,7 @@
 		<property id="antSpeedSensorId" type="number">24090</property>
 		<property id="antSpeedSensorType" type="number">121</property>
 		<property id="airDensity" type="float">1.191</property>
+		<property id="correction" type="float">1.0</property>
 	</properties>
 
 	<strings>
@@ -20,6 +21,7 @@
 		<string id="airDensity">Air density (kg/m3)</string>
 		<string id="airDensityPrompt">Air density in kg per cubic metre</string>
 		<string id="airDensityError">Error in air density</string>
+		<string id="correction">Correction factor</string>
 	</strings>
 	
 	<settings>
@@ -38,6 +40,10 @@
 		<setting propertyKey="@Properties.airDensity" title="@Strings.airDensity"
 			prompt="@Strings.airDensityPrompt">
 			<settingConfig type="numeric" errorMessage="@Strings.airDensityError" />
+		</setting>
+		<setting propertyKey="@Properties.correction" title="@Strings.correction"
+			prompt="@Strings.correction">
+			<settingConfig type="numeric" errorMessage="@Strings.correction" />
 		</setting>
 	</settings>
 

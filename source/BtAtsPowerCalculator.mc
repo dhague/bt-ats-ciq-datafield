@@ -42,7 +42,8 @@ class BtAtsPowerCalculator {
     }
 
     function updateAirDensityCorrection() {
-        airDensityCorrection = readKeyFloat(Application.getApp(), "airDensity", defaultAirDensity) / defaultAirDensity;
+        var correctionFactor = readKeyFloat(Application.getApp(), "correction", 1.0);
+        airDensityCorrection = correctionFactor * readKeyFloat(Application.getApp(), "airDensity", defaultAirDensity) / defaultAirDensity;
         System.println("Air density correction: "+airDensityCorrection);
     }
 
